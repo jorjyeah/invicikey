@@ -35,6 +35,9 @@
     var challenge;
     var updateInterval;
 
+
+    // check user, registered or not
+    // if yes, will go to getKey() to get 
     function signIn(){
         username = document.getElementById("username").value;
         $.ajax({
