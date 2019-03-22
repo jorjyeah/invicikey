@@ -40,7 +40,7 @@
         username = document.getElementById("username").value;
         $.ajax({
             type: 'post',
-            url: "http://localhost/keyforce/reg_force.php",
+            url: "https://jorjyeah.xyz/keyforce/reg_force.php",
             dataType: 'json',
             data:{'func':'checkUsername','username':username},
             success: function(data){
@@ -60,7 +60,7 @@
     function getDetailData(){
         $.ajax({
             type: 'post',
-            url: "http://localhost/keyforce/reg_force.php",
+            url: "https://jorjyeah.xyz/keyforce/reg_force.php",
             dataType: 'json',
             data:{'func':'generateNewChallenge','username':username},
             success: function(data){
@@ -79,7 +79,7 @@
     function checkRegistered(){
         $.ajax({
             type: 'post',
-            url: "http://localhost/keyforce/reg_force.php",
+            url: "https://jorjyeah.xyz/keyforce/reg_force.php",
             dataType: 'json',
             data:{'func':'checkKey','username':username},
             success: function(data){
@@ -125,7 +125,7 @@
     function inputUnique(){
         $.ajax({
             type: 'post',
-            url: "http://localhost/keyforce/reg_force.php",
+            url: "https://jorjyeah.xyz/keyforce/reg_force.php",
             dataType: 'json',
             data:{'func':'inputUnique','username':username,'unique':unique},
             success: function(data){
