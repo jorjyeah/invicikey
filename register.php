@@ -40,7 +40,7 @@
         username = document.getElementById("username").value;
         $.ajax({
             type: 'post',
-            url: "https://jorjyeah.xyz/keyforce/reg_force.php",
+            url: "http://localhost/keyforce/reg_force.php",
             dataType: 'json',
             data:{'func':'checkUsername','username':username},
             success: function(data){
@@ -60,9 +60,9 @@
     function getDetailData(){
         $.ajax({
             type: 'post',
-            url: "https://jorjyeah.xyz/keyforce/reg_force.php",
+            url: "http://localhost/keyforce/reg_force.php",
             dataType: 'json',
-            data:{'func':'generateNewChallenge','username':username},
+            data:{'func':'generateNewChallenge',},
             success: function(data){
                 challenge = data;
                 templateQR();
@@ -74,17 +74,17 @@
     }
     
     // check user has been registered or not, check keyhandle
-    // if not registered, will get detail (update challenge)
+    // if not registered do nothing
     // if registered, will stop checking and move to ble registration
     function checkRegistered(){
         $.ajax({
             type: 'post',
-            url: "https://jorjyeah.xyz/keyforce/reg_force.php",
+            url: "http://localhost/keyforce/reg_force.php",
             dataType: 'json',
             data:{'func':'checkKey','username':username},
             success: function(data){
                 switch (data){
-                    case 1: getDetailData(); break;
+                    case 1: break;
                     case 0: clearInterval(updateInterval); registerBluetooth(); break;
                 }   
             },
@@ -104,28 +104,21 @@
         $('#qrcode')
         .empty()
         .append("<p>Scan this qr code with invicikey apps</p>")
-        .qrcode({width: 256,height: 256,text: reg_json})
-        .append("<p>Press this button to register your BLE</p>")
-        .append("<button type='submit' class='btn btn-primary' id='pair' onclick='pairing()'>Pair</button>");
+        .qrcode({width: 256,height: 256,text: reg_json});
         console.log(reg_data);
-    }
-
-    // function for update qr automatically + check user has been registered
-    function updateQR(){
-        checkRegistered()
     }
 
     // function for generate qr first time
     function generateQR(){
         getDetailData();
-        updateInterval = setInterval(updateQR,5000);
+        updateInterval = setInterval(checkRegistered,5000);
     }
 
     // input unique id to server
     function inputUnique(){
         $.ajax({
             type: 'post',
-            url: "https://jorjyeah.xyz/keyforce/reg_force.php",
+            url: "http://localhost/keyforce/reg_force.php",
             dataType: 'json',
             data:{'func':'inputUnique','username':username,'unique':unique},
             success: function(data){
