@@ -47,7 +47,7 @@
             data:{'func':'checkUsername','username':username},
             success: function(data){
                 switch (data){
-                    case 1: alert("user found"); getKey(); break;
+                    case 1: getKey(); break;
                     case 0: alert("user not found"); break;
                 }    
             },
@@ -64,7 +64,8 @@
             dataType: 'json',
             data:{'func':'getKey','username':username},
             success: function(data){
-                generateQR(data);
+                alert("user found");
+                templateQR(data);
             },
             error: function(){
                 alert("error");
@@ -72,64 +73,15 @@
         });
     }
     
-
-    function generateQR(key){
-        console.log(key);
-        // updateInterval = setInterval(updateQR,5000);
+    function templateQR(auth_data){
+        auth_json = JSON.stringify(auth_data);
+        $('#sign_in_input').empty();
+        $('#qrcode')
+        .empty()
+        .append("<p>Scan this qr code with invicikey apps</p>")
+        .qrcode({width: 300,height: 300,text: auth_json});
+        console.log(auth_json);
     }
-
-    function updateQR(){
-        checkRegistered()
-    }
-
-    // function getChallengeKey(){
-    //     $.ajax({
-    //         type: 'post',
-    //         url: "http://localhost/keyforce/auth_force.php",
-    //         dataType: 'json',
-    //         data:{'func':'getChallengeKey'},
-    //         success: function(data){
-    //             challenge = data;
-    //             templateQR();
-    //         },
-    //         error: function(){
-    //             alert("error");
-    //         }
-    //     });
-    // }
-    
-    // function checkRegistered(){
-    //     $.ajax({
-    //         type: 'post',
-    //         url: "http://localhost/keyforce/reg_force.php",
-    //         dataType: 'json',
-    //         data:{'func':'checkUsername','username':username},
-    //         success: function(data){
-    //             switch (data){
-    //                 case 1: getDetailData(); break;
-    //                 case 0: clearInterval(updateInterval); registerBluetooth(); break;
-    //             }   
-    //         },
-    //         error: function(){
-    //             alert("error");
-    //         }
-    //     });
-    // }
-
-    // function templateQR(){
-    //     //OBJECT
-    //     reg_data = {"action":"registration", "username":username, "appId":"https://jorjyeah.xyz", "challenge":challenge,"auth_portal":"https://jorjyeah.xyz/keyforce/register-portal.php"};
-    //     //JSON
-    //     reg_json = JSON.stringify(reg_data);
-    //     $('#register_input').empty();
-    //     $('#qrcode')
-    //     .empty()
-    //     .append("<p>Scan this qr code with invicikey apps</p>")
-    //     .qrcode({width: 256,height: 256,text: reg_json})
-    //     .append("<p>Press this button to register your BLE</p>")
-    //     .append("<button type='submit' class='btn btn-primary' id='pair' onclick='pairing()'>Pair</button>");
-    //     console.log(reg_data);
-    // }
 
     function inputUnique(){
         $.ajax({
