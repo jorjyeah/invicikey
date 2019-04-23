@@ -97,7 +97,7 @@
     // javascript for creating qr
     function templateQR(){
         //OBJECT
-        reg_data = {"action":"registration", "username":username, "appId":"http://jorjyeah.xyz/invicikey", "challenge":challenge,"reg_portal":"http://jorjyeah.xyz/keyforce/"};
+        reg_data = {"action":"registration", "username":username, "appId":"http://192.168.100.64/invicikey", "challenge":challenge,"reg_portal":"http://192.168.100.64/keyforce/"};
         //JSON
         reg_json = JSON.stringify(reg_data);
         $('#register_input').empty();
