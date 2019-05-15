@@ -23,6 +23,8 @@
             <button type="submit" class="btn btn-primary" id="register" onclick="register()">Register</button>
         <!-- </form> -->
         <hr>
+        <p> Have an account? <a href="sign_in.php">Sign In</a></p>
+        <hr>
     </div>
     <div class="d-flex justify-content-center">
         <div class="container" id="qrcode">
@@ -97,7 +99,7 @@
     // javascript for creating qr
     function templateQR(){
         //OBJECT
-        reg_data = {"action":"registration", "username":username, "appId":"http://192.168.100.64/invicikey", "challenge":challenge,"reg_portal":"http://192.168.100.64/keyforce/"};
+        reg_data = {"action":"registration", "username":username, "appId":"http://192.168.0.177/invicikey", "challenge":challenge,"reg_portal":"http://192.168.0.177/keyforce/"};
         //JSON
         reg_json = JSON.stringify(reg_data);
         $('#register_input').empty();
@@ -198,4 +200,6 @@
     function padHex(value) {
         return ('00' + value.toString(16).toUpperCase()).slice(-2);
     }
+
+
 </script>

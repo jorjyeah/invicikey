@@ -65,6 +65,7 @@
             data:{'func':'getKey','username':username},
             success: function(data){
                 alert("user found");
+                console.log(data);
                 templateQR(data);
             },
             error: function(){
@@ -79,7 +80,7 @@
         $('#qrcode')
         .empty()
         .append("<p>Scan this qr code with invicikey apps</p>")
-        .qrcode({width: 300,height: 300,text: auth_json});
+        .qrcode({width: 400,height: 400,text: auth_json});
         console.log(auth_json);
     }
 
