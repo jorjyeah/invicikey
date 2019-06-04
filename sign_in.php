@@ -32,9 +32,6 @@
 </html>
 <script>
     var username;
-    var challenge;
-    var updateInterval;
-
 
     // check user, registered or not
     // if yes, will go to getKey() to get 
@@ -47,7 +44,7 @@
             data:{'func':'checkUsername','username':username},
             success: function(data){
                 switch (data){
-                    case 1: getKey(); break;
+                    case 1: setTimeout(checkAuthenticated, 1000); getKey(); break;
                     case 0: alert("user not found"); break;
                 }    
             },
@@ -57,110 +54,46 @@
         });
     }
 
-    function getKey(){
+    function padHex(value) {
+        return ('00' + value.toString(16).toUpperCase()).slice(-2);
+    }
+    
+    var getKey = function(){
         $.ajax({
             type: 'post',
             url: "http://localhost/keyforce/auth_force.php",
             dataType: 'json',
             data:{'func':'getKey','username':username},
             success: function(data){
-                alert("user found");
+                // alert("user found");
                 console.log(data);
-                templateQR(data);
+                auth_json = JSON.stringify(data);
+                $('#sign_in_input').empty();
+                $('#qrcode')
+                .empty()
+                .append("<p>Scan this qr code with invicikey apps</p>")
+                .qrcode({width: 400,height: 400,text: auth_json});
+                setTimeout(getKey, 10000);
             },
             error: function(){
                 alert("error");
             }
         });
     }
-    
-    function templateQR(auth_data){
-        auth_json = JSON.stringify(auth_data);
-        $('#sign_in_input').empty();
-        $('#qrcode')
-        .empty()
-        .append("<p>Scan this qr code with invicikey apps</p>")
-        .qrcode({width: 400,height: 400,text: auth_json});
-        console.log(auth_json);
-    }
 
-    function inputUnique(){
+    var checkAuthenticated = function(){
         $.ajax({
             type: 'post',
-            url: "http://localhost/keyforce/reg_force.php",
+            url: "http://localhost/keyforce/auth_force.php",
             dataType: 'json',
-            data:{'func':'inputUnique','username':username,'unique':unique},
+            data:{'func':'checkAuthenticated','username':username},
             success: function(data){
-                switch (data){
-                    case 1: window.open("sign_in.php","_self"); break;
-                    //case 0: alert("Failed, Try Again."); deleteUser(); break;
-                }    
+                console.log(data);
+                setTimeout(checkAuthenticated, 1000);
             },
             error: function(){
                 alert("error");
             }
         });
-    }
-
-    function registerBluetooth(){
-        $('#qrcode')
-        .empty()
-        .append("<p>Press this button to register your BLE</p>")
-        .append("<button type='submit' class='btn btn-primary' id='pair' onclick='pairing()'>Pair</button>");
-    }
-    let unique = 0;
-    function pairing(){
-        navigator.bluetooth.requestDevice({
-            acceptAllDevices:true,
-            optionalServices: ['device_information']
-        })
-        .then(device => {
-            console.log("connecting...");        
-            return device.gatt.connect();
-        })
-        .then(server => {
-            console.log("getting service...");
-            return server.getPrimaryService('device_information');
-        })
-        .then(service => {
-            console.log("getting characteristic...");
-            if('system_id'){
-                return service.getCharacteristics('system_id');
-            }
-            return service.getCharacteristics();
-        })
-        .then(characteristics => {
-            let queue = Promise.resolve();
-            let decoder = new TextDecoder('utf-8');
-            characteristics.forEach(characteristic => {
-                switch (characteristic.uuid) {
-                    case BluetoothUUID.getCharacteristic('system_id'):
-                        queue = queue.then(_ => characteristic.readValue()).then(value => {
-                            unique = padHex(value.getUint8(7)) + padHex(value.getUint8(6)) + padHex(value.getUint8(5));
-                            console.log(unique);
-                        });
-                    break;
-                    default: console.log('> Unknown Characteristic: ' + characteristic.uuid);
-                }
-            });
-            return queue;
-        })
-        .catch(error => {
-            console.log('Argh! ' + error);
-        }).
-        then(() => {
-            console.log(unique);
-            if(unique == 0){
-                alert("retry");
-            }else{
-                alert("success");
-                inputUnique();
-            }
-            unique = 0;
-        });
-    }
-
-    function padHex(value) {
-        return ('00' + value.toString(16).toUpperCase()).slice(-2);
     }
 </script>
