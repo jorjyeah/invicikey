@@ -44,7 +44,7 @@
     </div>
     <div class="container" id="safePage">
         <hr>
-            <p id="dev"> LOCKED </p>
+            <p id="secret"> LOCKED </p>
         <hr>
     </div>
     <div class="row justify-content-center">
@@ -55,7 +55,7 @@
 
 <script>
     var bluetoothDevice;
-    var username = 'jorjyeahkj'; //please change to session variable name
+    var username = 'jorjyeah'; // !!!! please change to session id
 
     function signOut(){
         // <?php
@@ -104,6 +104,7 @@
     }
 
     let unique = 0;
+
     function pairing(){
         navigator.bluetooth.requestDevice({acceptAllDevices: true})
         .then(device => {
@@ -111,7 +112,6 @@
             console.log(device.name);
             console.log("connecting...");        
             return device.gatt.connect();
-            // connect();
         })
         .then(server => {
             console.log("getting service...");
@@ -152,12 +152,13 @@
             type: 'post',
             url: "http://localhost/keyforce/auth_force.php",
             dataType: 'json',
-            data:{'func':'checkIdBle','username':username,'idBle':unique},
+            data:{'func':'checkIdBle','username':username,'idBle':unique},// !!!! please change to session id
             success: function(data){
                 console.log(data);
                 if(data){
+                    // make listener what if bluetooth disconnected
                     bluetoothDevice.addEventListener('gattserverdisconnected', onDisconnected);
-                    connect();
+                    unlocking();
                 }else{
                     alert("Can't unlock the page, not authenticated");
                 }
@@ -168,16 +169,17 @@
         });
     }
 
-    function connect() {
+    
+
+    function unlocking() {
         exponentialBackoff(3 /* max retries */, 2 /* seconds delay */,
             function toTry() {
                 time('Connecting to Bluetooth Device... ');
                 return bluetoothDevice.gatt.connect();
             },
             function success() {
-                //alert("connected");
-                //unlock page
-                console.log('> Bluetooth Device connected. Try disconnect it now.');
+                console.log('> BLE connected. Page Unlocked');
+                document.getElementById("secret").innerHTML = "UNLOCKED"; //unlock page
             },
             function fail() {
                 time('Failed to reconnect.');
@@ -185,14 +187,14 @@
     }
 
     function onDisconnected() {
-        //lock page
-        console.log('> Bluetooth Device disconnected');
-        connect();
+        console.log('> BLE disconnected. Page Locked');
+        document.getElementById("secret").innerHTML = "LOCKED"; //lock page
+        checkIdBle(); //in check id ble there's connect() module, so if not same value it will be connected
     }
 
     function exponentialBackoff(max, delay, toTry, success, fail) {
         toTry().then(result => success(result))
-        .catch(_ => {
+        .catch(result => {
             if (max === 0) {
                 return fail();
             }

@@ -47,17 +47,18 @@
     });
 
     function connect() {
-        exponentialBackoff(3 /* max retries */, 10 /* seconds delay */,
-        function toTry() {
-            time('Connecting to Bluetooth Device... ');
-            return bluetoothDevice.gatt.connect();
-        },
-        function success() {
-            append('connected');
-        },
-        function fail() {
-            time('Failed to reconnect.');
-        });
+        exponentialBackoff(3 /* max retries */, 2 /* seconds delay */,
+            function toTry() {
+                time('Connecting to Bluetooth Device... ');
+                return bluetoothDevice.gatt.connect();
+            },
+            function success() {
+                append('connected');
+            },
+            function fail() {
+                time('Failed to reconnect.');
+            }
+        );
     }
 
     function sessionDisconnected() {
@@ -66,7 +67,7 @@
         // }
         time("Disconnecting . . .");
         if (bluetoothDevice.gatt.connected) {
-            bluetoothDevice.gatt.disconnect();
+            bluetoothDevice.gatt.closed();
         } else {
             time("already disconnected");
         }
@@ -78,9 +79,10 @@
     }
 
     function exponentialBackoff(max, delay, toTry, success, fail) {
-        toTry().then(result => success(result))
+        toTry()
+        .then(result => success(result))
         .catch(_ => {
-            if (max === 0) {
+            if (max == 0) {
                 return fail();
             }
             time('Retrying in ' + delay + 's... (' + max + ' tries left)');
