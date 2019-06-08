@@ -36,6 +36,11 @@
     // check user, registered or not
     // if yes, will go to getKey() to get 
     function signIn(){
+        <?php
+            session_start();
+            session_unset();
+            session_destroy();
+        ?>
         username = document.getElementById("username").value;
         $.ajax({
             type: 'post',
@@ -73,7 +78,7 @@
                 .empty()
                 .append("<p>Scan this qr code with invicikey apps</p>")
                 .qrcode({width: 400,height: 400,text: auth_json});
-                setTimeout(getKey, 10000);
+                setTimeout(getKey, 30000);
             },
             error: function(){
                 alert("error");
@@ -88,8 +93,13 @@
             dataType: 'json',
             data:{'func':'checkAuthenticated','username':username},
             success: function(data){
-                console.log(data);
-                setTimeout(checkAuthenticated, 1000);
+                // setTimeout(checkAuthenticated, 1000);
+                // console.log(data);
+                if(!data){
+                    setTimeout(checkAuthenticated, 1000);
+                }else{
+                    window.open("yourpage.php","_self");
+                }
             },
             error: function(){
                 alert("error");
