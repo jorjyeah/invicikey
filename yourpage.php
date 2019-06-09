@@ -17,29 +17,24 @@
     <div class="container">
         <?php
             session_start();
-            // if(isset($_SESSION['authenticated']) && $_SESSION['authenticated']){
-            //     echo "welcome";
-            //     echo "<br /> Auth status ";
-            //     echo $_SESSION['authenticated'];
-            //     echo "<br /> Username ";
-            //     echo $_SESSION['username'];
-            //     echo "<br /> Auth id System ";
-            //     echo $_SESSION['authenticated_id_system'];
-            //     echo "<br /> Auth id DB ";
-            //     echo $_SESSION['authenticated_id_database'];
-            //     echo "<br /> Session ID ";
-            //     echo session_id();
-            // }else{
-            //     echo '<script>
-            //     alert("Please sign in");
-            //     window.open("sign_in.php","_self");</script>';
-            // }
+            $sessionid = session_id();
         ?>
     </div>
     <div class="d-flex justify-content-center">
         <div class="container" id="bluetoothPairing">
             <p>Pair your bluetooth to unlock this page</p>
-            <button type='submit' class='btn btn-primary' id='pair' onclick='pairing()'>Pair</button>
+            <div class="row">
+                <div class="col">
+                    <button type='submit' class='btn btn-primary' id='pair' onclick='pairing()'>Pair</button>
+                </div>
+                <div class="col">
+                    <div class="clearfix" id="loading">
+                        <div class="spinner-grow text-primary float-right" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <div class="container" id="safePage">
@@ -55,15 +50,14 @@
 
 <script>
     var bluetoothDevice;
-    var username = 'jorjyeah'; // !!!! please change to session id
-
-    onInactive(10000, function () {
-        console.log('> BLE disconnected. Page Locked');
-        document.getElementById("secret").innerHTML = "LOCKED";
-    });
+    var sessionid = "<?php echo $sessionid; ?>";
+    let unique = 0;
+    var wait;
+    var loadingIndicator = document.getElementById("loading");
+    loadingIndicator.style.display = "none";
 
     function onInactive(ms, cb) {
-        var wait = setTimeout(cb, ms);
+        wait = setTimeout(cb, ms);
         document.onmousemove = document.mousedown = document.mouseup = document.onkeydown = document.onkeyup = document.focus = function () {
             clearTimeout(wait);
             wait = setTimeout(cb, ms);
@@ -71,56 +65,47 @@
     }
 
     function signOut(){
-        // <?php
-        //     $username=$_SESSION['username'];
-        //     include '../keyforce/phpseclib/Crypt/Hash.php';
-        //     include '../keyforce/constants.php';
-        //     require_once('../keyforce/connections.php');
+        <?php
+            $username=$_SESSION['username'];
+            include '../keyforce/phpseclib/Crypt/Hash.php';
+            include '../keyforce/constants.php';
+            require_once('../keyforce/connections.php');
 
-        //     $sql = 'SELECT salt FROM credential WHERE username="'.$username.'"';
-        //     $result = mysqli_query($conn, $sql);
-        //     if (mysqli_num_rows($result) > 0) {
-        //         while($row = $result->fetch_assoc()) {
-        //             $saltDatabase = $row['salt'];
-        //         }
-        //     } else {
-        //         $saltDatabase = NULL;
-        //     }
+            $sql = 'SELECT salt FROM credential WHERE username="'.$username.'"';
+            $result = mysqli_query($conn, $sql);
+            if (mysqli_num_rows($result) > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $saltDatabase = $row['salt'];
+                }
+            } else {
+                $saltDatabase = NULL;
+            }
 
-        //     $hash = new Crypt_Hash('sha1');
-        //     $authenticated = bin2hex($hash->hash($STRINGFALSE.$saltDatabase.$PEPPER));
-        //     $sql = "UPDATE credential SET authenticated='".$authenticated."' WHERE username='".$username."'";
-        //     if (mysqli_query($conn, $sql)) {
-        //         $status = 1;
-        //         $message = "reset success";
-        //     } else {
-        //         $status = 0;
-        //         $message = "reset failed";
-        //     }
-        //     mysqli_close($conn);
-        //     session_regenerate_id();
-        //     session_unset();
-        //     session_destroy();
-        // ?>
-
+            $hash = new Crypt_Hash('sha1');
+            $authenticated = bin2hex($hash->hash($STRINGFALSE.$saltDatabase.$PEPPER));
+            $sql = "UPDATE credential SET authenticated='".$authenticated."' WHERE username='".$username."'";
+            if (mysqli_query($conn, $sql)) {
+                $status = 1;
+                $message = "reset success";
+            } else {
+                $status = 0;
+                $message = "reset failed";
+            }
+            mysqli_close($conn);
+            session_regenerate_id();
+            session_unset();
+            session_destroy();
+        ?>
         alert("Signing out");
-        if (!bluetoothDevice) {
-            return;
+        if(onDisconnect()){
+            window.open("sign_in.php","_self");
         }
-        log('Disconnecting from Bluetooth Device...');
-        if (bluetoothDevice.gatt.connected) {
-            bluetoothDevice.gatt.disconnect();
-        } else {
-            log('> Bluetooth Device is already disconnected');
-        }
-        // window.open("sign_in.php","_self");
     }
-
-    let unique = 0;
 
     function pairing(){
         navigator.bluetooth.requestDevice({acceptAllDevices: true})
         .then(device => {
+            loadingIndicator.style.display = "block";
             bluetoothDevice = device;
             console.log(device.name);
             console.log("connecting...");        
@@ -154,7 +139,7 @@
             });
             return queue;
         })
-        .catch(error => { console.log(error) 
+        .catch(error => { console.log(error); loadingIndicator.style.display = "none";
         });
     }
 
@@ -165,15 +150,20 @@
             type: 'post',
             url: "http://localhost/keyforce/auth_force.php",
             dataType: 'json',
-            data:{'func':'checkIdBle','username':username,'idBle':unique},// !!!! please change to session id
+            data:{'func':'checkIdBle','sessionid':sessionid,'idBle':unique},// !!!! please change to session id
             success: function(data){
                 console.log(data);
                 if(data){
-                    // make listener what if bluetooth disconnected
-                    // bluetoothDevice.addEventListener('gattserverdisconnected', onDisconnected);
-                    // unlocking();
                     console.log('> BLE connected. Page Unlocked');
+                    loadingIndicator.style.display = "none";
                     document.getElementById("secret").innerHTML = "UNLOCKED"; //unlock page
+                    // timer for check inactivity user for 10 seconds 
+                    onInactive(10000, function () {
+                        if(onDisconnect()){
+                            console.log('> BLE disconnected. Page Locked');
+                            document.getElementById("secret").innerHTML = "LOCKED";
+                        }
+                    });
                 }else{
                     alert("Can't unlock the page, not authenticated");
                 }
@@ -183,44 +173,22 @@
             }
         });
     }
-
-    function unlocking() {
-        exponentialBackoff(3 /* max retries */, 2 /* seconds delay */,
-            function toTry() {
-                time('Connecting to Bluetooth Device... ');
-                return bluetoothDevice.gatt.connect();
-            },
-            function success() {
-                console.log('> BLE connected. Page Unlocked');
-                document.getElementById("secret").innerHTML = "UNLOCKED"; //unlock page
-            },
-            function fail() {
-                time('Failed to reconnect.');
-            });
-    }
-
-    function onDisconnected() {
-        console.log('> BLE disconnected. Page Locked');
-        document.getElementById("secret").innerHTML = "LOCKED"; //lock page
-        checkIdBle(); //in check id ble there's connect() module, so if not same value it will be connected
-    }
-
-    function exponentialBackoff(max, delay, toTry, success, fail) {
-        toTry().then(result => success(result))
-        .catch(result => {
-            if (max === 0) {
-                return fail();
+    
+    function onDisconnect(){
+        if (!bluetoothDevice) {
+            console.log('No Bluetooth Device...');
+        }else{
+            console.log('Disconnecting from Bluetooth Device...');
+            if (bluetoothDevice.gatt.connected) {
+                bluetoothDevice.gatt.disconnect();
+                console.log('> Bluetooth Device has been disconnected');
+            } else {
+                console.log('> Bluetooth Device is already disconnected');
             }
-            time('Retrying in ' + delay + 's... (' + max + ' tries left)');
-            setTimeout(function() {
-            exponentialBackoff(--max, delay * 2, toTry, success, fail);
-            }, delay * 1000);
-        });
-    }
-
-    function time(text) {
-        var time = '[' + new Date().toJSON().substr(11, 8) + '] ' + text;
-        console.log(time);
+            return true;
+            // clear timeout if hasbeen disconnected
+            clearTimeout(wait);
+        }
     }
 
     // hex converter
