@@ -57,6 +57,19 @@
     var bluetoothDevice;
     var username = 'jorjyeah'; // !!!! please change to session id
 
+    onInactive(10000, function () {
+        console.log('> BLE disconnected. Page Locked');
+        document.getElementById("secret").innerHTML = "LOCKED";
+    });
+
+    function onInactive(ms, cb) {
+        var wait = setTimeout(cb, ms);
+        document.onmousemove = document.mousedown = document.mouseup = document.onkeydown = document.onkeyup = document.focus = function () {
+            clearTimeout(wait);
+            wait = setTimeout(cb, ms);
+        };
+    }
+
     function signOut(){
         // <?php
         //     $username=$_SESSION['username'];
@@ -157,8 +170,10 @@
                 console.log(data);
                 if(data){
                     // make listener what if bluetooth disconnected
-                    bluetoothDevice.addEventListener('gattserverdisconnected', onDisconnected);
-                    unlocking();
+                    // bluetoothDevice.addEventListener('gattserverdisconnected', onDisconnected);
+                    // unlocking();
+                    console.log('> BLE connected. Page Unlocked');
+                    document.getElementById("secret").innerHTML = "UNLOCKED"; //unlock page
                 }else{
                     alert("Can't unlock the page, not authenticated");
                 }
@@ -168,8 +183,6 @@
             }
         });
     }
-
-    
 
     function unlocking() {
         exponentialBackoff(3 /* max retries */, 2 /* seconds delay */,
