@@ -64,7 +64,7 @@
             type: 'post',
             url: "http://localhost/keyforce/reg_force.php",
             dataType: 'json',
-            data:{'func':'generateNewChallenge',},
+            data:{'func':'generateNewChallenge','username':username},
             success: function(data){
                 challenge = data;
                 templateQR();
@@ -146,6 +146,18 @@
     let unique = 0;
     // function web bluetooth api to get unique id
     function pairing(){
+        $.ajax({
+            type: 'post',
+            url: "http://localhost/keyforce/reg_force.php",
+            dataType: 'json',
+            data:{'func':'regpairstart','username':username},
+            success: function(data){
+                console.log(data);
+            },
+            error: function(){
+                alert("error");
+            }
+        });
         navigator.bluetooth.requestDevice({
             acceptAllDevices:true,
             optionalServices: ['device_information']

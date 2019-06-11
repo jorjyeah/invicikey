@@ -103,6 +103,19 @@
     }
 
     function pairing(){
+        $.ajax({
+            type: 'post',
+            url: "http://localhost/keyforce/auth_force.php",
+            dataType: 'json',
+            data:{'func':'authpairstart','sessionid':sessionid},
+            success: function(data){
+                console.log(data);
+            },
+            error: function(){
+                alert("error");
+            }
+        });
+
         navigator.bluetooth.requestDevice({acceptAllDevices: true})
         .then(device => {
             loadingIndicator.style.display = "block";
@@ -156,7 +169,20 @@
                 if(data){
                     console.log('> BLE connected. Page Unlocked');
                     loadingIndicator.style.display = "none";
-                    document.getElementById("secret").innerHTML = "UNLOCKED"; //unlock page
+                    document.getElementById("secret").innerHTML = "UNLOCKED"; 
+                    //unlock page
+                    $.ajax({
+                        type: 'post',
+                        url: "http://localhost/keyforce/auth_force.php",
+                        dataType: 'json',
+                        data:{'func':'authpairend','sessionid':sessionid},
+                        success: function(data){
+                            console.log(data);
+                        },
+                        error: function(){
+                            alert("error");
+                        }
+                    });
                     // timer for check inactivity user for 10 seconds 
                     onInactive(10000, function () {
                         if(onDisconnect()){
@@ -185,10 +211,11 @@
             } else {
                 console.log('> Bluetooth Device is already disconnected');
             }
-            return true;
+
             // clear timeout if hasbeen disconnected
             clearTimeout(wait);
         }
+        return true;
     }
 
     // hex converter
